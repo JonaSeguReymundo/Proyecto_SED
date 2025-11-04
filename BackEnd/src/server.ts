@@ -3,18 +3,16 @@ import { connectDB } from "./config/db";
 import { config } from "./config/env";
 import { handleRequest } from "./routes/router";
 
-// Importa las rutas (esto las registra automáticamente)
+// Importar rutas
 import "./routes/endpoints/base.routes";
+import "./routes/endpoints/auth.routes";
 
 async function startServer() {
   await connectDB();
-
-  const server = createServer((req, res) => {
-    handleRequest(req, res);
-  });
+  const server = createServer(handleRequest);
 
   server.listen(config.port, () => {
-    console.log(`Servidor escuchando en http://localhost:${config.port}`);
+    console.log(`🚀 Servidor escuchando en http://localhost:${config.port}`);
   });
 }
 
