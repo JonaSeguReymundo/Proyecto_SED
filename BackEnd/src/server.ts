@@ -6,13 +6,14 @@ import { handleRequest } from "./routes/router";
 // Importar rutas
 import "./routes/endpoints/base.routes";
 import "./routes/endpoints/auth.routes";
+import "./routes/endpoints/protected.routes";
 
 async function startServer() {
   await connectDB();
   const server = createServer(handleRequest);
 
   server.listen(config.port, () => {
-    console.log(`🚀 Servidor escuchando en http://localhost:${config.port}`);
+    console.log(`Servidor escuchando en http://localhost:${config.port}`);
   });
 }
 
