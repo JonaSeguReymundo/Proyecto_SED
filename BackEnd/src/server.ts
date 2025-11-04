@@ -1,12 +1,18 @@
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer } from "http";
+import { connectDB } from "./config/db";
+import { config } from "./config/env";
 
-const PORT = 3000;
-
-const server = createServer((req: IncomingMessage, res: ServerResponse) => {
+const server = createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("API de Reservas de Carros, Servidor funcionando correctamente");
+  res.end("Servidor conectado correctamente a MongoDB");
 });
 
-server.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
-});
+async function startServer() {
+  await connectDB();
+
+  server.listen(config.port, () => {
+    console.log(`Servidor escuchando en http://localhost:${config.port}`);
+  });
+}
+
+startServer();
