@@ -3,11 +3,12 @@ import { getDB } from "../config/db";
 import { randomUUID } from "crypto";
 import { hashPassword, verifyPassword } from "../utils/crypto";
 import { saveLog } from "../utils/logger";
+import { handleError } from "../middleware/error.middleware";
 
 interface User {
   _id: string;
   username: string;
-  password: string;
+  password?: string;
   role: string;
 }
 
@@ -39,9 +40,7 @@ export async function register(req: IncomingMessage, res: ServerResponse) {
     const { username, password, role } = body;
 
     if (!username || !password) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Faltan campos obligatorios" }));
-      return;
+      return handleError(res, 400, "Faltan campos obligatorios");
     }
 
     const db = getDB();
@@ -49,9 +48,7 @@ export async function register(req: IncomingMessage, res: ServerResponse) {
 
     const existing = await users.findOne({ username });
     if (existing) {
-      res.writeHead(409, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "El usuario ya existe" }));
-      return;
+      return handleError(res, 409, "El usuario ya existe");
     }
 
     const hashed = await hashPassword(password);
@@ -63,9 +60,11 @@ export async function register(req: IncomingMessage, res: ServerResponse) {
     };
 
     await users.insertOne(user);
+    
+    const { password: _, ...safeUser } = user;
 
     res.writeHead(201, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Usuario registrado correctamente" }));
+    res.end(JSON.stringify({ message: "Usuario registrado correctamente", user: safeUser }));
 
     //  Registrar log
     await saveLog({
@@ -78,8 +77,7 @@ export async function register(req: IncomingMessage, res: ServerResponse) {
 
   } catch (error) {
     console.error(error);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Error interno en registro" }));
+    handleError(res, 500, "Error interno en registro");
   }
 }
 
@@ -94,10 +92,8 @@ export async function login(req: IncomingMessage, res: ServerResponse) {
     const sessions = db.collection<Session>("sessions");
 
     const user = await users.findOne({ username });
-    if (!user || !(await verifyPassword(password, user.password))) {
-      res.writeHead(401, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Credenciales inválidas" }));
-      return;
+    if (!user || !user.password || !(await verifyPassword(password, user.password))) {
+      return handleError(res, 401, "Credenciales inválidas");
     }
 
     const token = randomUUID();
@@ -108,9 +104,11 @@ export async function login(req: IncomingMessage, res: ServerResponse) {
     };
 
     await sessions.insertOne(session);
+    
+    const { password: _, ...safeUser } = user;
 
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Login exitoso", token }));
+    res.end(JSON.stringify({ message: "Login exitoso", token, user: safeUser }));
 
     // Registrar log
     await saveLog({
@@ -123,7 +121,6 @@ export async function login(req: IncomingMessage, res: ServerResponse) {
 
   } catch (error) {
     console.error(error);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Error interno en login" }));
+    handleError(res, 500, "Error interno en login");
   }
 }

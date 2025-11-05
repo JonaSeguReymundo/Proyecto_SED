@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { getDB } from "../config/db";
+import { handleError } from "./error.middleware";
 
 export interface AuthUser {
   _id: string;
@@ -48,7 +49,7 @@ function extractTokenFromHeader(req: IncomingMessage): string | null {
 /**
  * Busca el usuario autenticado a partir del token
  */
-export async function authenticate(req: IncomingMessage): Promise<AuthUser | null> {
+export async function authenticate(req: IncomingMessage, res: ServerResponse): Promise<AuthUser | null> {
   const token = extractTokenFromHeader(req);
   if (!token) return null;
 
@@ -60,6 +61,17 @@ export async function authenticate(req: IncomingMessage): Promise<AuthUser | nul
   // Buscamos la sesión por _id (token)
   const session = await sessions.findOne({ _id: token });
   if (!session) return null;
+
+  // Validar expiración de la sesión (1 hora)
+  if (session.createdAt) {
+    const now = new Date();
+    const sessionAge = now.getTime() - session.createdAt.getTime();
+    if (sessionAge > 3600000) { // 1 hora en ms
+      await sessions.deleteOne({ _id: token }); // Eliminar sesión expirada
+    handleError(res, 401, "Unauthorized: la sesión ha expirado");
+    return null;
+    }
+  }
 
   // session.userId es string según SessionDoc
   const user = await users.findOne({ _id: session.userId });
@@ -73,10 +85,11 @@ export async function authenticate(req: IncomingMessage): Promise<AuthUser | nul
  * Devuelve el AuthUser o responde 401 y retorna null
  */
 export async function requireAuth(req: IncomingMessage, res: ServerResponse): Promise<AuthUser | null> {
-  const user = await authenticate(req);
+  const user = await authenticate(req, res);
   if (!user) {
-    res.writeHead(401, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Unauthorized: token inválido o ausente" }));
+    if (!res.writableEnded) { // Evitar doble respuesta si authenticate ya respondió
+      handleError(res, 401, "Unauthorized: token inválido o ausente");
+    }
     return null;
   }
   return user;
@@ -94,10 +107,8 @@ export async function requireRole(
   if (!user) return null;
 
   if (!roles.includes(user.role)) {
-    res.writeHead(403, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Forbidden: no tienes permisos para este recurso" }));
+    handleError(res, 403, "Forbidden: no tienes permisos para este recurso");
     return null;
   }
   return user;
 }
-

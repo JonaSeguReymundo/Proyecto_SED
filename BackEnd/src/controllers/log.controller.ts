@@ -1,15 +1,18 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { getDB } from "../config/db";
-import { requireRole } from "../middleware/auth.middleware";
 import { LogEntry } from "../models/log.model";
+import { handleError } from "../middleware/error.middleware";
+import { AuthUser } from "../middleware/auth.middleware";
 
-export async function getLogs(req: IncomingMessage, res: ServerResponse) {
-  const user = await requireRole(req, res, ["admin", "superadmin"]);
-  if (!user) return;
+export async function getLogs(req: IncomingMessage, res: ServerResponse, user: AuthUser) {
+  try {
+    const db = getDB();
+    const logs = await db.collection<LogEntry>("logs").find().sort({ timestamp: -1 }).toArray();
 
-  const db = getDB();
-  const logs = await db.collection<LogEntry>("logs").find().sort({ timestamp: -1 }).toArray();
-
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(logs));
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(logs));
+  } catch (err) {
+    console.error(err);
+    handleError(res, 500, "Error al obtener los logs");
+  }
 }

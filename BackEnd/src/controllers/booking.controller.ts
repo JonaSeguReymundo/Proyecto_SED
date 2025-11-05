@@ -1,33 +1,21 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { getDB } from "../config/db";
 import { randomUUID } from "crypto";
-import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { Booking } from "../models/booking.model";
 import { Car } from "../models/car.model";
 import { saveLog } from "../utils/logger";
-
-async function parseBody(req: IncomingMessage): Promise<any> {
-  return new Promise((resolve, reject) => {
-    let data = "";
-    req.on("data", chunk => (data += chunk));
-    req.on("end", () => {
-      try {
-        resolve(JSON.parse(data));
-      } catch (err) {
-        reject(err);
-      }
-    });
-  });
-}
+import { handleError } from "../middleware/error.middleware";
+import { AuthUser } from "../middleware/auth.middleware";
 
 // --- POST /bookings ---
-export async function createBooking(req: IncomingMessage, res: ServerResponse) {
-  const user = await requireAuth(req, res);
-  if (!user) return;
-
+export async function createBooking(
+  req: IncomingMessage,
+  res: ServerResponse,
+  user: AuthUser,
+  body: any
+) {
   try {
-    const body = await parseBody(req);
-    const bookingsData = Array.isArray(body) ? body : [body]; // soporta array o un objeto
+    const bookingsData = Array.isArray(body) ? body : [body];
 
     const db = getDB();
     const createdBookings = [];
@@ -35,18 +23,18 @@ export async function createBooking(req: IncomingMessage, res: ServerResponse) {
     for (const data of bookingsData) {
       const { carId, startDate, endDate } = data;
       if (!carId || !startDate || !endDate) {
-        throw new Error("Faltan datos obligatorios en una reserva");
+        return handleError(res, 400, "Faltan datos obligatorios en una reserva");
       }
 
       const car = await db.collection<Car>("cars").findOne({ _id: carId });
-      if (!car) throw new Error(`Auto con ID ${carId} no encontrado`);
-      if (!car.available) throw new Error(`El auto ${car.brand} ${car.model} no está disponible`);
+      if (!car) return handleError(res, 404, `Auto con ID ${carId} no encontrado`);
+      if (!car.available)
+        return handleError(res, 409, `El auto ${car.brand} ${car.model} no está disponible`);
 
       const days =
         (new Date(endDate).getTime() - new Date(startDate).getTime()) /
         (1000 * 60 * 60 * 24);
-
-      if (days <= 0) throw new Error("Fechas inválidas en una reserva");
+      if (days <= 0) return handleError(res, 400, "Fechas inválidas en una reserva");
 
       const totalPrice = days * car.pricePerDay;
 
@@ -61,7 +49,9 @@ export async function createBooking(req: IncomingMessage, res: ServerResponse) {
       };
 
       await db.collection<Booking>("bookings").insertOne(booking);
-      await db.collection<Car>("cars").updateOne({ _id: carId }, { $set: { available: false } });
+      await db
+        .collection<Car>("cars")
+        .updateOne({ _id: carId }, { $set: { available: false } });
       createdBookings.push(booking);
     }
 
@@ -77,7 +67,6 @@ export async function createBooking(req: IncomingMessage, res: ServerResponse) {
       })
     );
 
-    // Log: registro de creación
     await saveLog({
       userId: user._id,
       username: user.username,
@@ -85,26 +74,24 @@ export async function createBooking(req: IncomingMessage, res: ServerResponse) {
       method: "POST",
       endpoint: "/bookings",
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error(err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: err.message || "Error al crear reservas" }));
+    handleError(res, 500, "Error al crear la reserva");
   }
 }
-	
 
 // --- GET /bookings ---
-export async function getMyBookings(req: IncomingMessage, res: ServerResponse) {
-  const user = await requireAuth(req, res);
-  if (!user) return;
+export async function getMyBookings(req: IncomingMessage, res: ServerResponse, user: AuthUser) {
+  try {
+    const db = getDB();
+    const bookings = await db
+      .collection<Booking>("bookings")
+      .find({ userId: user._id })
+      .toArray();
 
-  const db = getDB();
-  const bookings = await db.collection<Booking>("bookings").find({ userId: user._id }).toArray();
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(bookings));
 
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(bookings));
-
-  //Log
     await saveLog({
       userId: user._id,
       username: user.username,
@@ -112,20 +99,21 @@ export async function getMyBookings(req: IncomingMessage, res: ServerResponse) {
       method: "GET",
       endpoint: "/bookings",
     });
+  } catch (err) {
+    console.error(err);
+    handleError(res, 500, "Error al obtener las reservas");
+  }
 }
 
-// --- GET /bookings/all (solo admin o superadmin) ---
-export async function getAllBookings(req: IncomingMessage, res: ServerResponse) {
-  const user = await requireRole(req, res, ["admin", "superadmin"]);
-  if (!user) return;
+// --- GET /bookings/all ---
+export async function getAllBookings(req: IncomingMessage, res: ServerResponse, user: AuthUser) {
+  try {
+    const db = getDB();
+    const bookings = await db.collection<Booking>("bookings").find().toArray();
 
-  const db = getDB();
-  const bookings = await db.collection<Booking>("bookings").find().toArray();
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(bookings));
 
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(bookings));
-
-  //Log
     await saveLog({
       userId: user._id,
       username: user.username,
@@ -133,124 +121,86 @@ export async function getAllBookings(req: IncomingMessage, res: ServerResponse) 
       method: "GET",
       endpoint: "/bookings/all",
     });
+  } catch (err) {
+    console.error(err);
+    handleError(res, 500, "Error al obtener todas las reservas");
+  }
 }
 
 // --- DELETE /bookings/:id ---
-export async function cancelBooking(req: IncomingMessage, res: ServerResponse) {
-  const user = await requireAuth(req, res);
-  if (!user) return;
-
-  const id = req.url?.split("/")[2];
-  if (!id) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "ID no proporcionado" }));
-    return;
-  }
-
-  const db = getDB();
-  const booking = await db.collection<Booking>("bookings").findOne({ _id: id });
-
-  if (!booking) {
-    res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Reserva no encontrada" }));
-    return;
-  }
-
-  // Solo puede cancelar quien la creó o un admin/superadmin
-  if (
-    booking.userId !== user._id &&
-    !["admin", "superadmin"].includes(user.role)
-  ) {
-    res.writeHead(403, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "No tienes permiso para cancelar esta reserva" }));
-    return;
-  }
-
-  await db.collection<Booking>("bookings").deleteOne({ _id: id });
-  await db.collection<Car>("cars").updateOne({ _id: booking.carId }, { $set: { available: true } });
-
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ message: "Reserva cancelada correctamente" }));
-
-  // Log de cancelación
-  await saveLog({
-    userId: user._id,
-    username: user.username,
-    action: `Canceló la reserva con ID ${id}`,
-    method: "DELETE",
-    endpoint: `/bookings/${id}`,
-  });
-}
-
-// --- PUT /bookings/:id ---
-export async function updateBooking(req: IncomingMessage, res: ServerResponse) {
-  const user = await requireAuth(req, res);
-  if (!user) return;
-
-  const id = req.url?.split("/")[2];
-  if (!id) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "ID no proporcionado" }));
-    return;
-  }
-
+export async function cancelBooking(req: IncomingMessage, res: ServerResponse, user: AuthUser) {
   try {
-    const body = await parseBody(req);
-    const { startDate, endDate } = body;
-
-    if (!startDate || !endDate) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Faltan fechas" }));
-      return;
-    }
+    const id = req.url?.split("/")[2];
+    if (!id) return handleError(res, 400, "ID no proporcionado");
 
     const db = getDB();
     const booking = await db.collection<Booking>("bookings").findOne({ _id: id });
+    if (!booking) return handleError(res, 404, "Reserva no encontrada");
 
-    if (!booking) {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Reserva no encontrada" }));
-      return;
+    if (booking.userId !== user._id && !["admin", "superadmin"].includes(user.role)) {
+      return handleError(res, 403, "No tienes permiso para cancelar esta reserva");
     }
 
-    // Solo el creador o admin/superadmin pueden modificar
-    if (
-      booking.userId !== user._id &&
-      !["admin", "superadmin"].includes(user.role)
-    ) {
-      res.writeHead(403, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "No tienes permiso para modificar esta reserva" }));
-      return;
+    await db.collection<Booking>("bookings").deleteOne({ _id: id });
+    await db
+      .collection<Car>("cars")
+      .updateOne({ _id: booking.carId }, { $set: { available: true } });
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "Reserva cancelada correctamente" }));
+
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: `Canceló la reserva con ID ${id}`,
+      method: "DELETE",
+      endpoint: `/bookings/${id}`,
+    });
+  } catch (err) {
+    console.error(err);
+    handleError(res, 500, "Error al cancelar la reserva");
+  }
+}
+
+// --- PUT /bookings/:id ---
+export async function updateBooking(
+  req: IncomingMessage,
+  res: ServerResponse,
+  user: AuthUser,
+  body: any
+) {
+  try {
+    const id = req.url?.split("/")[2];
+    if (!id) return handleError(res, 400, "ID no proporcionado");
+
+    const { startDate, endDate } = body;
+    if (!startDate || !endDate) return handleError(res, 400, "Faltan fechas");
+
+    const db = getDB();
+    const booking = await db.collection<Booking>("bookings").findOne({ _id: id });
+    if (!booking) return handleError(res, 404, "Reserva no encontrada");
+
+    if (booking.userId !== user._id && !["admin", "superadmin"].includes(user.role)) {
+      return handleError(res, 403, "No tienes permiso para modificar esta reserva");
     }
 
     const car = await db.collection<Car>("cars").findOne({ _id: booking.carId });
-    if (!car) {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Auto asociado no encontrado" }));
-      return;
-    }
+    if (!car) return handleError(res, 404, "Auto asociado no encontrado");
 
     const days =
       (new Date(endDate).getTime() - new Date(startDate).getTime()) /
       (1000 * 60 * 60 * 24);
-
-    if (days <= 0) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Las fechas no son válidas" }));
-      return;
-    }
+    if (days <= 0) return handleError(res, 400, "Las fechas no son válidas");
 
     const totalPrice = days * car.pricePerDay;
 
-    await db.collection<Booking>("bookings").updateOne(
-      { _id: id },
-      { $set: { startDate, endDate, totalPrice } }
-    );
+    await db
+      .collection<Booking>("bookings")
+      .updateOne({ _id: id }, { $set: { startDate, endDate, totalPrice } });
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Reserva actualizada correctamente", totalPrice }));
 
-    // Log de modificación
     await saveLog({
       userId: user._id,
       username: user.username,
@@ -258,11 +208,8 @@ export async function updateBooking(req: IncomingMessage, res: ServerResponse) {
       method: "PUT",
       endpoint: `/bookings/${id}`,
     });
-
   } catch (err) {
     console.error(err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Error al actualizar la reserva" }));
+    handleError(res, 500, "Error al actualizar la reserva");
   }
 }
-	
