@@ -20,4 +20,12 @@ async function startServer() {
   });
 }
 
+process.on("uncaughtException", (err) => {
+  console.error("Error no capturado:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Promesa rechazada sin manejar:", reason);
+});
+
 startServer();
