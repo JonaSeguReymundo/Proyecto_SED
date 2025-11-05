@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { Booking } from "../models/booking.model";
 import { Car } from "../models/car.model";
+import { saveLog } from "../utils/logger";
 
 async function parseBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -75,6 +76,15 @@ export async function createBooking(req: IncomingMessage, res: ServerResponse) {
         bookings: createdBookings,
       })
     );
+
+    // Log: registro de creación
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: `Creó ${createdBookings.length > 1 ? createdBookings.length + " reservas" : "una reserva"}`,
+      method: "POST",
+      endpoint: "/bookings",
+    });
   } catch (err: any) {
     console.error(err);
     res.writeHead(500, { "Content-Type": "application/json" });
@@ -93,6 +103,15 @@ export async function getMyBookings(req: IncomingMessage, res: ServerResponse) {
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify(bookings));
+
+  //Log
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: "Consultó sus reservas personales",
+      method: "GET",
+      endpoint: "/bookings",
+    });
 }
 
 // --- GET /bookings/all (solo admin o superadmin) ---
@@ -105,6 +124,15 @@ export async function getAllBookings(req: IncomingMessage, res: ServerResponse) 
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify(bookings));
+
+  //Log
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: "Consultó todas las reservas del sistema",
+      method: "GET",
+      endpoint: "/bookings/all",
+    });
 }
 
 // --- DELETE /bookings/:id ---
@@ -143,6 +171,15 @@ export async function cancelBooking(req: IncomingMessage, res: ServerResponse) {
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ message: "Reserva cancelada correctamente" }));
+
+  // Log de cancelación
+  await saveLog({
+    userId: user._id,
+    username: user.username,
+    action: `Canceló la reserva con ID ${id}`,
+    method: "DELETE",
+    endpoint: `/bookings/${id}`,
+  });
 }
 
 // --- PUT /bookings/:id ---
@@ -212,6 +249,16 @@ export async function updateBooking(req: IncomingMessage, res: ServerResponse) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Reserva actualizada correctamente", totalPrice }));
+
+    // Log de modificación
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: `Actualizó la reserva con ID ${id}`,
+      method: "PUT",
+      endpoint: `/bookings/${id}`,
+    });
+
   } catch (err) {
     console.error(err);
     res.writeHead(500, { "Content-Type": "application/json" });

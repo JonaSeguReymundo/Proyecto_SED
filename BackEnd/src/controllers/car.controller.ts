@@ -3,6 +3,7 @@ import { getDB } from "../config/db";
 import { randomUUID } from "crypto";
 import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { Car } from "../models/car.model";
+import { saveLog } from "../utils/logger";
 
 // Helper para leer body JSON
 async function parseBody(req: IncomingMessage): Promise<any> {
@@ -29,6 +30,16 @@ export async function getCars(req: IncomingMessage, res: ServerResponse) {
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify(cars));
+
+  // Log
+  await saveLog({
+    userId: user._id,
+    username: user.username,
+    action: "Consultó la lista de autos",
+    method: "GET",
+    endpoint: "/cars",
+  });
+
 }
 
 // --- POST /cars (solo admin o superadmin)
@@ -64,6 +75,16 @@ export async function createCar(req: IncomingMessage, res: ServerResponse) {
 
       res.writeHead(201, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: `${cars.length} autos creados correctamente`, cars }));
+
+      // Log de creación
+      await saveLog({
+        userId: user._id,
+        username: user.username,
+        action: `Creó ${cars.length} autos`,
+        method: "POST",
+        endpoint: "/cars",
+      });
+
       return;
     }
 
@@ -89,11 +110,23 @@ export async function createCar(req: IncomingMessage, res: ServerResponse) {
 
     res.writeHead(201, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Auto creado correctamente", car }));
+
+    // Log de creación
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: `Creó un auto (${brand} ${model})`,
+      method: "POST",
+      endpoint: "/cars",
+    });
+
   } catch (err) {
     console.error(err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: (err as Error).message || "Error al crear el auto" }));
   }
+
+  
 }
 
 
@@ -131,11 +164,23 @@ export async function updateCar(req: IncomingMessage, res: ServerResponse) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Auto actualizado correctamente" }));
+
+    // Log de modificación
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: `Actualizó el auto con ID ${id}`,
+      method: "PUT",
+      endpoint: `/cars/${id}`,
+    });
+
   } catch (err) {
     console.error(err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Error al actualizar el auto" }));
   }
+
+  
 }
 
 // --- DELETE /cars/:id (solo admin o superadmin)
@@ -169,4 +214,15 @@ export async function deleteCar(req: IncomingMessage, res: ServerResponse) {
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ message: "Auto eliminado correctamente" }));
+
+
+  // Log de eliminación
+  await saveLog({
+    userId: user._id,
+    username: user.username,
+    action: `Eliminó el auto con ID ${id}`,
+    method: "DELETE",
+    endpoint: `/cars/${id}`,
+  });
+
 }

@@ -9,6 +9,7 @@ import "./routes/endpoints/auth.routes";
 import "./routes/endpoints/protected.routes";
 import "./routes/endpoints/cars.routes";
 import "./routes/endpoints/bookings.routes";
+import "./routes/endpoints/logs.routes";
 
 async function startServer() {
   await connectDB();

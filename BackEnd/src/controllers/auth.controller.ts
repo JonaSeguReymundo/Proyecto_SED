@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from "http";
 import { getDB } from "../config/db";
 import { randomUUID } from "crypto";
 import { hashPassword, verifyPassword } from "../utils/crypto";
+import { saveLog } from "../utils/logger";
 
 interface User {
   _id: string;
@@ -65,6 +66,16 @@ export async function register(req: IncomingMessage, res: ServerResponse) {
 
     res.writeHead(201, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Usuario registrado correctamente" }));
+
+    //  Registrar log
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: `Se registró en el sistema con el rol ${user.role}`,
+      method: "POST",
+      endpoint: "/auth/register",
+    });
+
   } catch (error) {
     console.error(error);
     res.writeHead(500, { "Content-Type": "application/json" });
@@ -100,6 +111,16 @@ export async function login(req: IncomingMessage, res: ServerResponse) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Login exitoso", token }));
+
+    // Registrar log
+    await saveLog({
+      userId: user._id,
+      username: user.username,
+      action: "Inició sesión en el sistema",
+      method: "POST",
+      endpoint: "/auth/login",
+    });
+
   } catch (error) {
     console.error(error);
     res.writeHead(500, { "Content-Type": "application/json" });
