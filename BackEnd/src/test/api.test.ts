@@ -99,7 +99,7 @@ async function runTests() {
     testCount++;
     const success = await testFn();
     results.push({ description, success, expected: "", received: "" });
-    console.log(`[${success ? "✅" : "❌"}] ${description}`);
+    console.log(`[${success ? "Si" : "No"}] ${description}`);
   }
 
   // 1. Registrar usuarios de prueba
@@ -158,7 +158,7 @@ async function runTests() {
         res.on("data", chunk => data += chunk);
         res.on("end", () => {
             const result = res.statusCode === 400 && JSON.parse(data).error === "Formato JSON inválido";
-            console.log(`[${result ? "✅" : "❌"}] POST /cars con JSON inválido debe dar 400`);
+            console.log(`[${result ? "Si" : "No"}] POST /cars con JSON inválido debe dar 400`);
         });
     });
     req.write("{ 'invalid': json }"); // JSON inválido
