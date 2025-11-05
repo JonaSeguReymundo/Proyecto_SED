@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 
-type RouteHandler = (req: IncomingMessage, res: ServerResponse) => void;
+type RouteHandler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
 
 interface Route {
   method: string;
@@ -10,22 +10,38 @@ interface Route {
 
 const routes: Route[] = [];
 
-// --- Función para registrar rutas ---
+// --- Registrar rutas ---
 export function addRoute(method: string, path: string, handler: RouteHandler) {
   routes.push({ method: method.toUpperCase(), path, handler });
 }
 
-// --- Función para manejar peticiones ---
-export function handleRequest(req: IncomingMessage, res: ServerResponse) {
+// --- Buscar coincidencia de rutas ---
+function matchRoute(method: string, url: string): Route | undefined {
+  // Coincidencia exacta
+  let route = routes.find(r => r.method === method && r.path === url);
+  if (route) return route;
+
+  // Coincidencia parcial (para rutas con IDs dinámicos)
+  return routes.find(r => r.method === method && url.startsWith(r.path));
+}
+
+// --- Manejar peticiones ---
+export async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   const method = req.method?.toUpperCase() || "";
   const url = req.url?.split("?")[0] || "";
 
-  const route = routes.find(r => r.method === method && r.path === url);
+  const route = matchRoute(method, url);
 
   if (route) {
-    route.handler(req, res);
+    try {
+      await route.handler(req, res);
+    } catch (err) {
+      console.error("Error en el handler:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Error interno del servidor" }));
+    }
   } else {
     res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Ruta no encontrada" }));
+    res.end(JSON.stringify({ error: "Ruta no encontrada", method, url }));
   }
 }
