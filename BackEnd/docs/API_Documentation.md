@@ -1,22 +1,48 @@
-# API de Reservas de Autos
+# Car Rental API – Backend Documentation
 
-## Autenticación
-- **POST /auth/register** → Crear usuario
-- **POST /auth/login** → Iniciar sesión
-- **GET /profile** → Ver perfil (token)
+## AUTH ROUTES
+| Method | Endpoint | Role | Description |
+|--------|-----------|------|--------------|
+| POST | `/auth/register` | Public | Register a new user |
+| POST | `/auth/login` | Public | Login user and get token |
+| GET | `/profile` | Authenticated | Returns user profile |
 
-## Autos
-- **GET /cars** → Listar autos (todos)
-- **POST /cars** → Crear uno o varios autos *(admin/superadmin)*
-- **PUT /cars/:id** → Actualizar auto *(creador/superadmin)*
-- **DELETE /cars/:id** → Eliminar auto *(creador/superadmin)*
+---
 
-## Reservas
-- **POST /bookings** → Crear una o varias reservas
-- **GET /bookings** → Ver mis reservas
-- **GET /bookings/all** → Ver todas *(admin/superadmin)*
-- **PUT /bookings/:id** → Modificar fechas *(dueño/admin/superadmin)*
-- **DELETE /bookings/:id** → Cancelar reserva *(dueño/admin/superadmin)*
+## CAR ROUTES
+| Method | Endpoint | Role | Description |
+|--------|-----------|------|--------------|
+| GET | `/cars` | Authenticated | Get all cars |
+| POST | `/cars` | Admin / SuperAdmin | Create car(s) |
+| PUT | `/cars/:id` | Admin / SuperAdmin | Update car |
+| DELETE | `/cars/:id` | Admin / SuperAdmin | Delete car |
 
-## Auditoría
-- **GET /logs** → Ver historial de acciones *(admin/superadmin)*
+---
+
+## BOOKINGS ROUTES
+| Method | Endpoint | Role | Description |
+|--------|-----------|------|--------------|
+| POST | `/bookings` | User | Create booking(s) |
+| GET | `/bookings` | User | Get user bookings |
+| GET | `/bookings/all` | Admin / SuperAdmin | Get all bookings |
+| PUT | `/bookings/:id` | User / Admin / SuperAdmin | Update booking dates |
+| DELETE | `/bookings/:id` | User / Admin / SuperAdmin | Cancel booking |
+
+---
+
+## LOGS ROUTES
+| Method | Endpoint | Role | Description |
+|--------|-----------|------|--------------|
+| GET | `/logs` | Admin / SuperAdmin | View activity logs |
+
+---
+
+## ⚙️ EXAMPLES
+
+### POST /auth/register
+```json
+{
+  "username": "admin",
+  "password": "123456",
+  "role": "superadmin"
+}
