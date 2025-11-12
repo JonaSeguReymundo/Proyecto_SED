@@ -1,6 +1,9 @@
 import { IncomingMessage, ServerResponse } from "http";
 
-type RouteHandler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
+type RouteHandler = (
+  req: IncomingMessage,
+  res: ServerResponse
+) => void | Promise<void>;
 
 interface Route {
   method: string;
@@ -18,15 +21,31 @@ export function addRoute(method: string, path: string, handler: RouteHandler) {
 // --- Buscar coincidencia de rutas ---
 function matchRoute(method: string, url: string): Route | undefined {
   // Coincidencia exacta
-  let route = routes.find(r => r.method === method && r.path === url);
+  let route = routes.find((r) => r.method === method && r.path === url);
   if (route) return route;
 
   // Coincidencia parcial (para rutas con IDs dinámicos)
-  return routes.find(r => r.method === method && url.startsWith(r.path));
+  return routes.find((r) => r.method === method && url.startsWith(r.path));
 }
 
 // --- Manejar peticiones ---
 export async function handleRequest(req: IncomingMessage, res: ServerResponse) {
+  // 💡 1. Habilitar CORS (permite acceso desde Vite en localhost:5173)
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // 💡 2. Manejar preflight (solicitudes OPTIONS)
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  // 💡 3. Procesar rutas normales
   const method = req.method?.toUpperCase() || "";
   const url = req.url?.split("?")[0] || "";
 

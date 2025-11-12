@@ -13,7 +13,23 @@ import "./routes/endpoints/logs.routes";
 
 async function startServer() {
   await connectDB();
-  const server = createServer(handleRequest);
+
+  const server = createServer(async (req, res) => {
+    // --- Configuración CORS ---
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    // Manejar preflight requests
+    if (req.method === "OPTIONS") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    // --- Pasar al manejador de rutas ---
+    await handleRequest(req, res);
+  });
 
   server.listen(config.port, () => {
     console.log(`Servidor escuchando en http://localhost:${config.port}`);
@@ -29,3 +45,4 @@ process.on("unhandledRejection", (reason) => {
 });
 
 startServer();
+
