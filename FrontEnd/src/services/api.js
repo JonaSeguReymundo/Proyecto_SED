@@ -1,13 +1,15 @@
+// src/services/api.js
 import { API } from '../config.js';
 import { storage } from '../utils/storage.js';
 
-async function request(path, { method = 'GET', body, auth = false } = {}) {
+async function request(path, { method = 'GET', body } = {}) {
   const url = `${API.BASE_URL}${path}`;
   const headers = { 'Content-Type': 'application/json' };
 
-  if (auth) {
-    const token = storage.getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+  // Siempre que haya token, se envía en Authorization
+  const token = storage.getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   const res = await fetch(url, {
@@ -28,8 +30,8 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
 }
 
 export const api = {
-  get: (p, opt = {})    => request(p, { ...opt, method: 'GET' }),
-  post: (p, b, opt={})  => request(p, { ...opt, method: 'POST', body: b }),
-  put: (p, b, opt={})   => request(p, { ...opt, method: 'PUT', body: b }),
-  del: (p, opt = {})    => request(p, { ...opt, method: 'DELETE' })
+  get:    (p, opt = {}) => request(p, { ...opt, method: 'GET' }),
+  post:   (p, b, opt={}) => request(p, { ...opt, method: 'POST', body: b }),
+  put:    (p, b, opt={}) => request(p, { ...opt, method: 'PUT', body: b }),
+  delete: (p, opt = {}) => request(p, { ...opt, method: 'DELETE' })
 };

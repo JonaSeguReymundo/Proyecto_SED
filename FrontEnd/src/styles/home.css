@@ -1,33 +1,576 @@
-.home-container {
-  padding: 2rem;
-  background: #f4f4f4;
+:root {
+  --green-main: #4caf50;
+  --green-dark: #45a049;
+  --bg-page: #f4f4f4;
+  --card-bg: #ffffff;
+  --text-main: #222222;
+  --text-muted: #666666;
+  --border-light: #e0e0e0;
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  --transition-fast: 0.2s ease;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-page);
+}
+
+/* CONTENEDOR PRINCIPAL */
+.home-wrapper {
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
 }
 
 .home-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  max-width: 800px;
-  margin: auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 1100px;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 1.5rem 2rem 2rem;
 }
 
+/* HEADER */
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 1rem;
 }
 
-#btnLogout {
-  background: #4CAF50;
-  padding: 10px 15px;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--green-main);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+#welcomeTitle {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.current-date {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* BOTONES GENERALES */
+.btn {
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
-  color: white;
   cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
-#btnLogout:hover {
-  background: #45A049;
+.btn-primary {
+  background: var(--green-main);
+  color: #ffffff;
 }
+
+.btn-primary:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(76, 175, 80, 0.4);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+}
+
+.btn-secondary:hover {
+  background: #f8f8f8;
+}
+
+/* TABS */
+.home-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.2rem 0 1.4rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.tab-button {
+  background: transparent;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.tab-button:hover {
+  background: #f0f0f0;
+}
+
+.tab-button.active {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--green-main);
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+/* CONTENIDO DE TABS */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* CARDS DASHBOARD */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-card {
+  background: #f8fbf8;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.info-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.metric {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--green-main);
+}
+
+/* PANEL DOBLE DASHBOARD */
+.dashboard-bottom {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.2rem;
+}
+
+.panel {
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  padding: 1rem 1.2rem;
+  background: #ffffff;
+}
+
+.panel h2,
+.panel h3 {
+  margin: 0 0 0.4rem;
+}
+
+.panel-subtitle {
+  margin: 0 0 0.8rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* LISTA AUTOS DASHBOARD */
+.cars-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cars-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed #eeeeee;
+  font-size: 0.95rem;
+}
+
+.cars-list li:last-child {
+  border-bottom: none;
+}
+
+/* TABLAS */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table thead {
+  background: #f7f7f7;
+}
+
+.table th,
+.table td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid #eeeeee;
+  text-align: left;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.table tbody tr:hover {
+  background: #fafafa;
+}
+
+/* FORM INLINE AUTOS */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.inline-form input {
+  flex: 1 1 150px;
+  padding: 0.4rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  font-size: 0.9rem;
+}
+
+.inline-form input:focus {
+  outline: none;
+  border-color: var(--green-main);
+  box-shadow: 0 0 3px rgba(76, 175, 80, 0.4);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ADMIN GRID */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.pre-box {
+  background: #1e1e1e;
+  color: #e5e5e5;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  max-height: 260px;
+  overflow: auto;
+}
+
+/* MENSAJE GENERAL */
+.home-message {
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .dashboard-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .home-card {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .home-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === LISTAS DE CARDS === */
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.empty-text {
+  padding: 16px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* === CARDS DE AUTOS (horizontales) === */
+
+.car-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  gap: 16px;
+}
+
+.car-card-main h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.car-subtitle {
+  margin: 4px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.car-price {
+  margin: 2px 0 0;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.car-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.car-card-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* === CARDS DE RESERVAS === */
+
+.booking-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  gap: 16px;
+}
+
+.booking-main h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.booking-id {
+  margin: 4px 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.booking-dates {
+  margin: 2px 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.booking-total {
+  margin: 4px 0 0;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.booking-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* === PILLS / ESTADOS === */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-available {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.status-unavailable {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.price-pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #166534;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* === MODAL === */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  position: relative;
+  z-index: 51;
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.15rem;
+  color: #0f172a;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.form-row label {
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.form-row input[type="text"],
+.form-row input[type="date"] {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.form-row input:focus {
+  outline: 2px solid #0f766e;
+  outline-offset: 1px;
+}
+
+.label-inline {
+  font-size: 0.85rem;
+  color: #4b5563;
+  margin-right: 4px;
+}
+
+.modal-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.error-text {
+  font-size: 0.8rem;
+  color: #b91c1c;
+  min-height: 16px;
+}
+
+/* Botón outline */
+.btn.btn-outline {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.btn.btn-outline:hover {
+  background: #f3f4f6;
+}
+
