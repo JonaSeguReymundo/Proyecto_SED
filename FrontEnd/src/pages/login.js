@@ -1,4 +1,6 @@
 import { login } from '../services/authService.js';
+import "../styles/login.css";
+
 
 export function init() {
   const form = document.getElementById('loginForm');

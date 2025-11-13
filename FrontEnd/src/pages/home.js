@@ -1,5 +1,7 @@
 import { logout, fetchProfile, fetchAdminArea } from '../services/authService.js';
 import { storage } from '../utils/storage.js';
+import "../styles/home.css";
+
 
 export function init() {
   const btnLogout = document.getElementById('btnLogout');

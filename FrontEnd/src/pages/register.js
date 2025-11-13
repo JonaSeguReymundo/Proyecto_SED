@@ -1,4 +1,6 @@
 import { register } from '../services/authService.js';
+import "../styles/register.css";
+
 
 export function init() {
   const form = document.getElementById('registerForm');

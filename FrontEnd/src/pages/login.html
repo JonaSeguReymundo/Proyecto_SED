@@ -1,10 +1,33 @@
-<section class="card">
-  <h1>Iniciar sesión</h1>
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="Usuario" required />
-    <input type="password" id="password" placeholder="Contraseña" required />
-    <button type="submit">Entrar</button>
-  </form>
-  <p>¿No tienes cuenta? <a class="link" href="#/register">Regístrate</a></p>
-  <p id="loginMsg"></p>
-</section>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="../../styles/login.css" />
+
+</head>
+
+<body>
+  <section class="auth-container">
+    <div class="auth-card">
+      <h1>Iniciar sesión</h1>
+
+      <form id="loginForm">
+        <input type="text" id="username" placeholder="Usuario" required />
+        <input type="password" id="password" placeholder="Contraseña" required />
+        <button type="submit">Entrar</button>
+      </form>
+
+      <p class="switch-text">
+        ¿No tienes cuenta?
+        <a class="link" href="#/register">Regístrate</a>
+      </p>
+
+      <p id="loginMsg"></p>
+    </div>
+  </section>
+
+  <script type="module" src="./login.js"></script>
+</body>
+</html>
