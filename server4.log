@@ -1,0 +1,7 @@
+
+> backend@1.0.0 dev
+> tsc && node dist/server.js
+
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Starting server...
+Port: 3000

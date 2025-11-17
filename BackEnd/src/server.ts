@@ -36,6 +36,9 @@ async function startServer() {
   });
 }
 
+console.log("Starting server...");
+console.log("Port:", config.port);
+
 process.on("uncaughtException", (err) => {
   console.error("Error no capturado:", err);
 });

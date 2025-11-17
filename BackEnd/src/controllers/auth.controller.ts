@@ -43,6 +43,12 @@ export async function register(req: IncomingMessage, res: ServerResponse) {
       return handleError(res, 400, "Faltan campos obligatorios");
     }
 
+    // Política de contraseñas seguras
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return handleError(res, 400, "La contraseña no cumple con los requisitos de seguridad");
+    }
+
     const db = getDB();
     const users = db.collection<User>("users"); 
 

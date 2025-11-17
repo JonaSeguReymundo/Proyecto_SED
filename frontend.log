@@ -1,0 +1,25 @@
+
+> frontend@0.0.0 dev
+> vite
+
+
+  VITE v7.2.2  ready in 322 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+6:32:54 PM [vite] (client) warning: invalid import "/src/pages/${route.view}.js". Variable absolute imports are not supported, imports must start with ./ in the static part of the import. For example: import(`./foo/${bar}.js`).
+  Plugin: vite:dynamic-import-vars
+  File: /app/FrontEnd/src/routes/router.js
+6:32:54 PM [vite] (client) warning:
+/app/FrontEnd/src/routes/router.js
+24 |
+25 |    try {
+26 |      const mod = await import(`/src/pages/${route.view}.js`);
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+27 |      if (typeof mod.init === 'function') mod.init();
+28 |    } catch (e) {
+The above dynamic import cannot be analyzed by Vite.
+See https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /app/FrontEnd/src/routes/router.js
