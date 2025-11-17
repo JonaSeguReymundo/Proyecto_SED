@@ -23,7 +23,7 @@ async function loadRoute(path) {
   await renderHTMLInto('#app', `/src/pages/${route.view}.html`);
 
   try {
-    const mod = await import(`/src/pages/${route.view}.js`);
+    const mod = await import(`../pages/${route.view}.js`);
     if (typeof mod.init === 'function') mod.init();
   } catch (e) {
     console.error('Error al cargar script de la página', e);

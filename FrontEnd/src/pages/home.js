@@ -250,8 +250,7 @@ function renderCarsCards(cars, isAdmin) {
         <div class="car-card-buttons">
           <button 
             class="btn btn-primary btn-reserve-car" 
-            data-id="${car._id}" 
-            ${car.available ? "" : "disabled"}
+            data-id="${car._id}"
           >
             Reservar
           </button>
@@ -276,9 +275,17 @@ function renderCarsCards(cars, isAdmin) {
 
     // Reservar
     if (reserveBtn) {
+      console.log("Click en Reservar");
       const id = reserveBtn.dataset.id;
       const car = carsCache.find((c) => c._id === id);
-      if (!car || !car.available) return;
+      console.log("Auto seleccionado:", car);
+      if (!car) return;
+      
+      if (!car.available) {
+      alert("Este auto no está disponible para reservar.");
+      return;
+      }
+
       openReservationModal({ mode: "create", car });
       return;
     }
