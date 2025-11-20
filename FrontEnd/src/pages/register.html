@@ -15,6 +15,15 @@
       <form id="registerForm">
         <input type="text" id="username" placeholder="Usuario" required />
         <input type="password" id="password" placeholder="Contraseña" required />
+        <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" required />
+
+        <ul id="passwordRequirements">
+          <li>8 caracteres mínimo</li>
+          <li>Una mayúscula</li>
+          <li>Una minúscula</li>
+          <li>Un número</li>
+          <li>Un caracter especial (@$!%*?&)</li>
+        </ul>
 
         <select id="role">
           <option value="user">Usuario</option>

@@ -20,13 +20,13 @@ interface TestResult {
 
 const adminUser = {
   username: `admin_test_${randomUUID()}`,
-  password: "password123",
+  password: "Password123!",
   role: "admin",
 };
 
 const normalUser = {
   username: `user_test_${randomUUID()}`,
-  password: "password123",
+  password: "Password123!",
 };
 
 let adminToken: string | null = null;
@@ -103,9 +103,10 @@ async function runTests() {
   }
 
   // 1. Registrar usuarios de prueba
-  await test("Debe registrar un usuario admin", async () => {
-    const { statusCode } = await makeRequest("POST", "/auth/register", null, adminUser);
-    return statusCode === 201;
+  await test("Debe fallar al registrar con una contraseña débil", async () => {
+    const weakUser = { username: "weakuser", password: "123" };
+    const { statusCode } = await makeRequest("POST", "/auth/register", null, weakUser);
+    return statusCode === 400;
   });
   await test("Debe registrar un usuario normal", async () => {
     const { statusCode } = await makeRequest("POST", "/auth/register", null, normalUser);
