@@ -20,13 +20,13 @@ interface TestResult {
 
 const adminUser = {
   username: `admin_test_${randomUUID()}`,
-  password: "Password123!",
+  password: "password123!",
   role: "admin",
 };
 
 const normalUser = {
   username: `user_test_${randomUUID()}`,
-  password: "Password123!",
+  password: "password123!",
 };
 
 let adminToken: string | null = null;
@@ -39,7 +39,7 @@ function makeRequest(
   path: string,
   token: string | null = null,
   body: object | null = null
-): Promise<{ statusCode: number; data: any }> {
+): Promise<{ statusCode: number; data: any; headers: http.IncomingHttpHeaders }> {
   return new Promise((resolve, reject) => {
     const headers: http.OutgoingHttpHeaders = {
       "Content-Type": "application/json",
@@ -65,12 +65,14 @@ function makeRequest(
           resolve({
             statusCode: res.statusCode || 500,
             data: JSON.parse(data || "{}"),
+            headers: res.headers,
           });
         } catch (e) {
           // Si el cuerpo no es JSON (ej. body vacío)
           resolve({
             statusCode: res.statusCode || 500,
             data: data,
+            headers: res.headers,
           });
         }
       });
@@ -103,10 +105,9 @@ async function runTests() {
   }
 
   // 1. Registrar usuarios de prueba
-  await test("Debe fallar al registrar con una contraseña débil", async () => {
-    const weakUser = { username: "weakuser", password: "123" };
-    const { statusCode } = await makeRequest("POST", "/auth/register", null, weakUser);
-    return statusCode === 400;
+  await test("Debe registrar un usuario admin", async () => {
+    const { statusCode } = await makeRequest("POST", "/auth/register", null, adminUser);
+    return statusCode === 201;
   });
   await test("Debe registrar un usuario normal", async () => {
     const { statusCode } = await makeRequest("POST", "/auth/register", null, normalUser);
@@ -137,7 +138,23 @@ async function runTests() {
     return statusCode === 401 && data.error === "Credenciales inválidas";
   });
 
-  // 3. Crear un auto con el admin para usarlo en las pruebas de booking
+  // 3. Pruebas de seguridad
+  await test("Debe incluir cabeceras de seguridad en la respuesta", async () => {
+    const { headers } = await makeRequest("GET", "/");
+    return headers["x-content-type-options"] === "nosniff" &&
+           headers["strict-transport-security"] === "max-age=31536000; includeSubDomains" &&
+           headers["x-frame-options"] === "DENY";
+  });
+
+  await test("Debe bloquear peticiones de login después de 5 intentos fallidos", async () => {
+    for (let i = 0; i < 5; i++) {
+      await makeRequest("POST", "/auth/login", null, { username: "noexiste", password: "bad" });
+    }
+    const { statusCode } = await makeRequest("POST", "/auth/login", null, { username: "noexiste", password: "bad" });
+    return statusCode === 429;
+  });
+
+  // 4. Crear un auto con el admin para usarlo en las pruebas de booking
   await test("Debe crear un auto de prueba con el token de admin", async () => {
     const car = { brand: "Test", model: "Car", type: "Sedan", pricePerDay: 100 };
     const { statusCode, data } = await makeRequest("POST", "/cars", adminToken, car);

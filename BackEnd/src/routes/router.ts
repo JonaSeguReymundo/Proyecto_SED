@@ -1,6 +1,13 @@
 import { IncomingMessage, ServerResponse } from "http";
 
-type RouteHandler = (
+// --- Tipos ---
+export type Middleware = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: () => void
+) => void | Promise<void>;
+
+export type RouteHandler = (
   req: IncomingMessage,
   res: ServerResponse
 ) => void | Promise<void>;
@@ -8,14 +15,25 @@ type RouteHandler = (
 interface Route {
   method: string;
   path: string;
+  middlewares: Middleware[];
   handler: RouteHandler;
 }
 
 const routes: Route[] = [];
+const globalMiddlewares: Middleware[] = [];
 
-// --- Registrar rutas ---
-export function addRoute(method: string, path: string, handler: RouteHandler) {
-  routes.push({ method: method.toUpperCase(), path, handler });
+// --- Registrar middleware global ---
+export function use(middleware: Middleware) {
+  globalMiddlewares.push(middleware);
+}
+
+// --- Registrar rutas (con sobrecarga para middleware) ---
+export function addRoute(method: string, path: string, handler: RouteHandler): void;
+export function addRoute( method: string, path: string, ...handlers: [...Middleware[], RouteHandler]): void;
+export function addRoute( method: string, path: string, ...handlers: any[]): void {
+  const handler = handlers.pop() as RouteHandler;
+  const middlewares = handlers as Middleware[];
+  routes.push({ method: method.toUpperCase(), path, middlewares, handler });
 }
 
 // --- Buscar coincidencia de rutas ---
@@ -52,12 +70,33 @@ export async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   const route = matchRoute(method, url);
 
   if (route) {
+    // --- Ejecutar middleware y handler ---
+    const allMiddlewares = [...globalMiddlewares, ...(route.middlewares || [])];
+
+  const execute = async (index: number): Promise<void> => {
+  if (index < allMiddlewares.length) {
+    const mw = allMiddlewares[index];
+
+    if (mw) {
+      await mw(req, res, () => void execute(index + 1));
+    } else {
+      await execute(index + 1);
+    }
+
+  } else {
+    await route.handler(req, res);
+  }
+};
+
     try {
-      await route.handler(req, res);
+      await execute(0);
     } catch (err) {
-      console.error("Error en el handler:", err);
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Error interno del servidor" }));
+      console.error("Error en el handler o middleware:", err);
+      // Evitar doble escritura en la respuesta
+      if (!res.writableEnded) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Error interno del servidor" }));
+      }
     }
   } else {
     res.writeHead(404, { "Content-Type": "application/json" });
