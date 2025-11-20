@@ -73,20 +73,22 @@ export async function handleRequest(req: IncomingMessage, res: ServerResponse) {
     // --- Ejecutar middleware y handler ---
     const allMiddlewares = [...globalMiddlewares, ...(route.middlewares || [])];
 
-  const execute = async (index: number): Promise<void> => {
-  if (index < allMiddlewares.length) {
-    const mw = allMiddlewares[index];
-
-    if (mw) {
-      await mw(req, res, () => void execute(index + 1));
-    } else {
-      await execute(index + 1);
-    }
-
-  } else {
-    await route.handler(req, res);
-  }
-};
+  const execute = (index: number): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (index < allMiddlewares.length) {
+        const mw = allMiddlewares[index];
+        if (mw) {
+          mw(req, res, () => {
+            execute(index + 1).then(resolve).catch(reject);
+          });
+        } else {
+          execute(index + 1).then(resolve).catch(reject);
+        }
+      } else {
+        Promise.resolve(route.handler(req, res)).then(resolve).catch(reject);
+      }
+    });
+  };
 
     try {
       await execute(0);

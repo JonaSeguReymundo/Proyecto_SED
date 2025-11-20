@@ -4,7 +4,7 @@ import { config } from "./config/env";
 import { handleRequest } from "./routes/router";
 
 // Importar rutas
-import "./routes/middlewares";
+import "./routes/middleware";
 import "./routes/endpoints/base.routes";
 import "./routes/endpoints/auth.routes";
 import "./routes/endpoints/protected.routes";
