@@ -29,6 +29,7 @@ async function initHome() {
   setupLogout();
   setupNewCarForm();
   setupReservationModal();
+  setupSuperAdminAdminCreation();
 
   try {
     // PERFIL
@@ -59,6 +60,12 @@ async function initHome() {
 
     // ADMIN
     if (isAdmin) renderAdminInfo(profile, adminArea);
+    // OCULTAR PANEL PERFIL
+    const profilePanel = document.getElementById("profileJson")?.parentElement;
+    const adminPanel   = document.getElementById("adminAreaJson")?.parentElement;
+
+    if (profilePanel) profilePanel.style.display = "none";
+    if (adminPanel)   adminPanel.style.display   = "none";
 
     $("homeMsg").textContent = "Datos cargados correctamente.";
   } catch (e) {
@@ -113,6 +120,12 @@ function applyProfile(profile) {
   $("userAvatar").textContent = initials;
 
   const isAdmin = user.role === "admin" || user.role === "superadmin";
+  const isSuper = user.role === "superadmin";
+
+  qa(".super-only").forEach((el) => {
+    el.style.display = isSuper ? "" : "none";
+  });
+
   qa(".admin-only").forEach((el) => (el.style.display = isAdmin ? "" : "none"));
 }
 
@@ -635,4 +648,36 @@ function hasOverlappingBooking(carId, startStr, endStr, ignoreId = null) {
     // Se solapan si: start <= bEnd && end >= bStart
     return start <= bEnd && end >= bStart;
   });
+}
+
+function setupSuperAdminAdminCreation() {
+  const form = $("superCreateAdminForm");
+  if (!form) return;
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const msg = $("superAdminMsg");
+
+    const username = $("newAdminUsername").value.trim();
+    const password = $("newAdminPassword").value;
+
+    if (!username || !password) {
+      msg.textContent = "Completa todos los campos.";
+      msg.style.color = "red";
+      return;
+    }
+
+    try {
+      await api.post("/admin/create-admin", {
+        username,
+        password,
+      });
+      msg.textContent = "Administrador creado correctamente.";
+      msg.style.color = "green";
+      form.reset();
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.style.color = "red";
+    }
+  };
 }

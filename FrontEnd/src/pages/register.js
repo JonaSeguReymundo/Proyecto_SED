@@ -30,7 +30,7 @@ export function init() {
     const payload = {
       username: document.getElementById('username')?.value.trim(),
       password: password,
-      role: document.getElementById('role')?.value
+      role: "user"
     };
 
     try {

@@ -1,197 +1,233 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inicio</title>
-  <link rel="stylesheet" href="/src/styles/home.css" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inicio</title>
+    <link rel="stylesheet" href="/src/styles/home.css" />
+  </head>
 
-<body>
-  <section class="home-wrapper">
-    <div class="home-card">
-      
-      <!-- HEADER -->
-      <header class="home-header">
-        <div class="user-info">
-          <div class="avatar" id="userAvatar">US</div>
-          <div>
-            <h1 id="welcomeTitle">Bienvenido</h1>
-            <p id="welcomeSubtitle" class="subtitle">Cargando perfil...</p>
-          </div>
-        </div>
-
-        <div class="header-right">
-          <span id="currentDate" class="current-date"></span>
-          <button id="btnLogout" class="btn btn-secondary">Cerrar sesión</button>
-        </div>
-      </header>
-
-      <!-- TABS -->
-      <nav class="home-tabs">
-        <button class="tab-button active" data-tab="dashboard">Dashboard</button>
-        <button class="tab-button" data-tab="cars">Autos</button>
-        <button class="tab-button" data-tab="bookings">Reservas</button>
-        <button class="tab-button admin-only" data-tab="logs">Logs</button>
-        <button class="tab-button admin-only" data-tab="admin">Admin</button>
-      </nav>
-
-      <!-- TAB: DASHBOARD -->
-      <section id="tab-dashboard" class="tab-content active">
-        <div class="cards-grid">
-          <article class="info-card">
-            <h3>Total de autos</h3>
-            <p class="metric" id="metricTotalCars">-</p>
-          </article>
-
-          <article class="info-card">
-            <h3>Total de reservas</h3>
-            <p class="metric" id="metricTotalBookings">-</p>
-          </article>
-
-          <article class="info-card admin-only">
-            <h3>Total de logs</h3>
-            <p class="metric" id="metricTotalLogs">-</p>
-          </article>
-        </div>
-
-        <div class="dashboard-bottom">
-          <div class="panel">
-            <h2>Próximas reservas</h2>
-            <p class="panel-subtitle">Últimas reservas creadas</p>
-            <table class="table" id="dashboardBookingsTable">
-              <thead>
-                <tr>
-                  <th>Auto</th>
-                  <th>Desde</th>
-                  <th>Hasta</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+  <body>
+    <section class="home-wrapper">
+      <div class="home-card">
+        <!-- HEADER -->
+        <header class="home-header">
+          <div class="user-info">
+            <div class="avatar" id="userAvatar">US</div>
+            <div>
+              <h1 id="welcomeTitle">Bienvenido</h1>
+              <p id="welcomeSubtitle" class="subtitle">Cargando perfil...</p>
+            </div>
           </div>
 
-          <div class="panel">
-            <h2>Autos destacados</h2>
-            <p class="panel-subtitle">Últimos autos agregados</p>
-            <ul class="cars-list" id="dashboardCarsList"></ul>
+          <div class="header-right">
+            <span id="currentDate" class="current-date"></span>
+            <button id="btnLogout" class="btn btn-secondary">
+              Cerrar sesión
+            </button>
           </div>
-        </div>
-      </section>
+        </header>
 
-      <!-- TAB: AUTOS -->
-      <section id="tab-cars" class="tab-content">
-        <div class="section-header">
-          <h2>Autos</h2>
-          <button id="btnToggleNewCar" class="btn btn-primary admin-only">
-            Agregar auto
+        <!-- TABS -->
+        <nav class="home-tabs">
+          <button class="tab-button active" data-tab="dashboard">
+            Dashboard
           </button>
-        </div>
+          <button class="tab-button" data-tab="cars">Autos</button>
+          <button class="tab-button" data-tab="bookings">Reservas</button>
+          <button class="tab-button admin-only" data-tab="logs">Logs</button>
+          <button class="tab-button admin-only" data-tab="admin">Admin</button>
+        </nav>
 
-        <!-- Formulario solo para admins -->
-        <form id="newCarForm" class="inline-form hidden admin-only">
-          <input type="text" id="carBrand" placeholder="Marca" required />
-          <input type="text" id="carModel" placeholder="Modelo" required />
-          <input type="text" id="carType" placeholder="Tipo" required />
-          <input type="number" id="carPrice" placeholder="Precio por día" min="0" required />
-          <button type="submit" class="btn btn-primary">Guardar</button>
-          <button type="button" id="btnCancelNewCar" class="btn btn-secondary">Cancelar</button>
+        <!-- TAB: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content active">
+          <div class="cards-grid">
+            <article class="info-card">
+              <h3>Total de autos</h3>
+              <p class="metric" id="metricTotalCars">-</p>
+            </article>
+
+            <article class="info-card">
+              <h3>Total de reservas</h3>
+              <p class="metric" id="metricTotalBookings">-</p>
+            </article>
+
+            <article class="info-card admin-only">
+              <h3>Total de logs</h3>
+              <p class="metric" id="metricTotalLogs">-</p>
+            </article>
+          </div>
+
+          <div class="dashboard-bottom">
+            <div class="panel">
+              <h2>Próximas reservas</h2>
+              <p class="panel-subtitle">Últimas reservas creadas</p>
+              <table class="table" id="dashboardBookingsTable">
+                <thead>
+                  <tr>
+                    <th>Auto</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div class="panel">
+              <h2>Autos destacados</h2>
+              <p class="panel-subtitle">Últimos autos agregados</p>
+              <ul class="cars-list" id="dashboardCarsList"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: AUTOS -->
+        <section id="tab-cars" class="tab-content">
+          <div class="section-header">
+            <h2>Autos</h2>
+            <button id="btnToggleNewCar" class="btn btn-primary admin-only">
+              Agregar auto
+            </button>
+          </div>
+
+          <!-- Formulario solo para admins -->
+          <form id="newCarForm" class="inline-form hidden admin-only">
+            <input type="text" id="carBrand" placeholder="Marca" required />
+            <input type="text" id="carModel" placeholder="Modelo" required />
+            <input type="text" id="carType" placeholder="Tipo" required />
+            <input
+              type="number"
+              id="carPrice"
+              placeholder="Precio por día"
+              min="0"
+              required
+            />
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button
+              type="button"
+              id="btnCancelNewCar"
+              class="btn btn-secondary"
+            >
+              Cancelar
+            </button>
+          </form>
+
+          <!-- Cards de autos -->
+          <div id="carsCardsContainer" class="cards-list"></div>
+        </section>
+
+        <!-- TAB: RESERVAS -->
+        <section id="tab-bookings" class="tab-content">
+          <div class="section-header">
+            <h2>Mis reservas</h2>
+          </div>
+
+          <!-- Cards de reservas del usuario (o todas si es admin) -->
+          <div id="bookingsCardsContainer" class="cards-list"></div>
+        </section>
+
+        <!-- TAB: LOGS -->
+        <section id="tab-logs" class="tab-content">
+          <h2>Logs del sistema</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Acción</th>
+                <th>Método</th>
+                <th>Endpoint</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="logsTableBody"></tbody>
+          </table>
+        </section>
+
+        <!-- TAB: ADMIN -->
+        <section id="tab-admin" class="tab-content">
+          <h2>Área administrativa</h2>
+          <!-- TAB: SUPERADMIN -->
+          <div class="super-only panel" style="margin-top: 20px">
+            <h3>Crear Administrador</h3>
+            <form id="superCreateAdminForm" class="inline-form">
+              <input
+                type="text"
+                id="newAdminUsername"
+                placeholder="Nombre admin"
+                required
+              />
+              <input
+                type="password"
+                id="newAdminPassword"
+                placeholder="Contraseña"
+                required
+              />
+              <button type="submit" class="btn btn-primary">Crear admin</button>
+            </form>
+            <p id="superAdminMsg"></p>
+          </div>
+
+          <div class="admin-grid">
+            <div class="panel">
+              <h3>Perfil completo</h3>
+              <pre class="pre-box" id="profileJson"></pre>
+            </div>
+
+            <div class="panel">
+              <h3>Datos admin</h3>
+              <pre class="pre-box" id="adminAreaJson"></pre>
+            </div>
+          </div>
+        </section>
+
+        <p id="homeMsg" class="home-message"></p>
+      </div>
+    </section>
+
+    <!-- MODAL PARA NUEVA / EDICIÓN DE RESERVA -->
+    <div id="reservationModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <h3 id="reservationModalTitle">Nueva reserva</h3>
+        <form id="reservationForm">
+          <input type="hidden" id="resBookingId" />
+          <input type="hidden" id="resCarId" />
+
+          <div class="form-row">
+            <label for="resCarName">Auto</label>
+            <input type="text" id="resCarName" readonly />
+          </div>
+
+          <div class="form-row">
+            <label for="resStartDate">Desde</label>
+            <input type="date" id="resStartDate" required />
+          </div>
+
+          <div class="form-row">
+            <label for="resEndDate">Hasta</label>
+            <input type="date" id="resEndDate" required />
+          </div>
+
+          <div class="form-row">
+            <span class="label-inline">Precio estimado:</span>
+            <span id="resTotalPrice" class="price-pill">$0.00</span>
+          </div>
+
+          <p id="reservationError" class="error-text"></p>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              id="btnCloseReservation"
+              class="btn btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
         </form>
-
-        <!-- Cards de autos -->
-        <div id="carsCardsContainer" class="cards-list"></div>
-      </section>
-
-      <!-- TAB: RESERVAS -->
-      <section id="tab-bookings" class="tab-content">
-        <div class="section-header">
-          <h2>Mis reservas</h2>
-        </div>
-
-        <!-- Cards de reservas del usuario (o todas si es admin) -->
-        <div id="bookingsCardsContainer" class="cards-list"></div>
-      </section>
-
-      <!-- TAB: LOGS -->
-      <section id="tab-logs" class="tab-content">
-        <h2>Logs del sistema</h2>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Acción</th>
-              <th>Método</th>
-              <th>Endpoint</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody id="logsTableBody"></tbody>
-        </table>
-      </section>
-
-      <!-- TAB: ADMIN -->
-      <section id="tab-admin" class="tab-content">
-        <h2>Área administrativa</h2>
-
-        <div class="admin-grid">
-          <div class="panel">
-            <h3>Perfil completo</h3>
-            <pre class="pre-box" id="profileJson"></pre>
-          </div>
-
-          <div class="panel">
-            <h3>Datos admin</h3>
-            <pre class="pre-box" id="adminAreaJson"></pre>
-          </div>
-        </div>
-      </section>
-
-      <p id="homeMsg" class="home-message"></p>
+      </div>
     </div>
-  </section>
-
-  <!-- MODAL PARA NUEVA / EDICIÓN DE RESERVA -->
-  <div id="reservationModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <h3 id="reservationModalTitle">Nueva reserva</h3>
-      <form id="reservationForm">
-        <input type="hidden" id="resBookingId" />
-        <input type="hidden" id="resCarId" />
-
-        <div class="form-row">
-          <label for="resCarName">Auto</label>
-          <input type="text" id="resCarName" readonly />
-        </div>
-
-        <div class="form-row">
-          <label for="resStartDate">Desde</label>
-          <input type="date" id="resStartDate" required />
-        </div>
-
-        <div class="form-row">
-          <label for="resEndDate">Hasta</label>
-          <input type="date" id="resEndDate" required />
-        </div>
-
-        <div class="form-row">
-          <span class="label-inline">Precio estimado:</span>
-          <span id="resTotalPrice" class="price-pill">$0.00</span>
-        </div>
-
-        <p id="reservationError" class="error-text"></p>
-
-        <div class="modal-actions">
-          <button type="button" id="btnCloseReservation" class="btn btn-secondary">
-            Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary">
-            Guardar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</body>
+  </body>
 </html>
-
