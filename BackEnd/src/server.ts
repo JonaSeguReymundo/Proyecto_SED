@@ -19,7 +19,14 @@ async function startServer() {
 
   const server = createServer(async (req, res) => {
     // --- Configuración CORS ---
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    const whitelist = [process.env.FRONTEND_URL as string];
+    const origin = req.headers.origin as string;
+
+    if (whitelist.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
